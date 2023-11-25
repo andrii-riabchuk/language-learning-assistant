@@ -1,0 +1,47 @@
+.word:hover {
+  background-color: #ffcc00;
+}
+textarea {
+  padding: 10px;
+  display: block;
+  width: 400px;
+}
+
+.column {
+  /* display: inline-block; */
+  float: left;
+  margin: 20px;
+}
+.word-box {
+  /* width: 200px; */
+  height: 400px;
+  max-height: 500px;
+  overflow-y: auto;
+  padding-right: 10px;
+}
+
+.word-box::-webkit-scrollbar {
+  width: 3px;
+  background-color: #aaaaaa;
+}
+
+.word-box::-webkit-scrollbar-track {
+  margin-left: 50px;
+  margin-right: 100px;
+}
+
+.word-box::-webkit-scrollbar-thumb {
+  border-left: 4px solid rgba(0, 0, 0, 1);
+  background-color: #aaaaaa;
+}
+
+.cell {
+  float: inline-start;
+}
+.textContainer {
+  padding: 10px;
+  display: block;
+  width: 600px;
+  border: 1px solid #ccc;
+  text-align: start;
+}
