@@ -4,6 +4,7 @@ import { compareIgnoreCase, specialsSeparated } from "../utils/string";
 
 import "./LanguageAssistant.css";
 import { lookUp } from "../api/colinsapi";
+import CrossButton from "../ui/CrossButton/CrossButton";
 
 export interface LanguageAssistantProps {
   forText: string;
@@ -18,7 +19,7 @@ export default function LanguageAssistant({ forText }: LanguageAssistantProps) {
   const addSelectedWord = (word: string) => {
     if (!selectedWords.find((x) => compareIgnoreCase(x, word)))
       setSelectedWords([...selectedWords, word]);
-    lookUp(word, onLookUp);
+    // lookUp(word, onLookUp);
   };
 
   useEffect(() => {
@@ -36,6 +37,13 @@ export default function LanguageAssistant({ forText }: LanguageAssistantProps) {
     const textAreaElement = e.currentTarget;
     const word = textAreaElement.innerText.trim();
     addSelectedWord(word);
+  };
+
+  const onCrossClick = (i: number) => {
+    function f() {
+      setSelectedWords(selectedWords.toSpliced(i, 1));
+    }
+    return f;
   };
 
   const onCopyClick = () => toClip(selectedWords);
@@ -67,6 +75,8 @@ export default function LanguageAssistant({ forText }: LanguageAssistantProps) {
       </div>
       <div className="column">
         <h2>Word list</h2>
+        <button onClick={onCopyClick}>Copy</button>
+        <button onClick={onExportClick}>Export</button>
         <div className="word-box">
           <table style={{ textAlign: "start" }}>
             {selectedWords.map((x, i) => {
@@ -74,17 +84,18 @@ export default function LanguageAssistant({ forText }: LanguageAssistantProps) {
                 i == selectedWords.length - 1 ? { ref: lastAddedWordRef } : {};
               return (
                 <tr key={x + i} {...itemProps}>
-                  <td>
+                  <td style={{ width: "150px" }}>
                     {i + 1}. {x}
+                  </td>
+                  <td>
+                    <CrossButton onClick={onCrossClick(i)} />
                   </td>
                 </tr>
               );
             })}
           </table>
         </div>
-        <button onClick={onCopyClick}>Copy</button>
-        <button onClick={onExportClick}>Export</button>
-        <button onClick={() => lookUp("", onLookUp)}>Lookup</button>
+        {/* <button onClick={() => lookUp("", onLookUp)}>Lookup</button> */}
       </div>
       <div className="column">
         <h2>Lookup</h2>

@@ -14,7 +14,7 @@ textarea {
 }
 .word-box {
   /* width: 200px; */
-  /* height: 400px; */
+  height: 400px;
   max-height: 500px;
   overflow-y: auto;
   padding-right: 10px;
