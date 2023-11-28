@@ -3,11 +3,16 @@ import { toClip, toCsv } from "../utils/export";
 import { compareIgnoreCase, specialsSeparated } from "../utils/string";
 
 import "./LanguageAssistant.css";
-import { lookUp } from "../api/colinsapi";
+import { lookUp } from "../api/myapi";
 import CrossButton from "../ui/CrossButton/CrossButton";
 
 export interface LanguageAssistantProps {
   forText: string;
+}
+
+export interface Definition {
+  word: string;
+  meanings: string[][];
 }
 
 export default function LanguageAssistant({ forText }: LanguageAssistantProps) {
@@ -19,15 +24,16 @@ export default function LanguageAssistant({ forText }: LanguageAssistantProps) {
   const addSelectedWord = (word: string) => {
     if (!selectedWords.find((x) => compareIgnoreCase(x, word)))
       setSelectedWords([...selectedWords, word]);
-    // lookUp(word, onLookUp);
+
+    lookUp(word, onLookUp);
   };
 
   useEffect(() => {
     lastAddedWordRef.current?.scrollIntoView();
   }, [selectedWords]);
 
-  const [definition, setDefinition] = useState<Element>();
-  const onLookUp = (r: Element) => {
+  const [definition, setDefinition] = useState<Definition>();
+  const onLookUp = (r: Definition) => {
     setDefinition(r);
   };
 
@@ -48,6 +54,7 @@ export default function LanguageAssistant({ forText }: LanguageAssistantProps) {
 
   const onCopyClick = () => toClip(selectedWords);
   const onExportClick = () => toCsv(selectedWords);
+  console.log("definition:", definition);
 
   return (
     <>
@@ -99,10 +106,10 @@ export default function LanguageAssistant({ forText }: LanguageAssistantProps) {
       </div>
       <div className="column">
         <h2>Lookup</h2>
-        <div
-          className="definition"
-          dangerouslySetInnerHTML={{ __html: definition?.innerHTML ?? "" }}
-        />
+        <div className="definition" />
+        {definition?.word}
+        <br />
+        {definition?.meanings?.map((x) => x.join(",")).join(" || ")}
       </div>
     </>
   );

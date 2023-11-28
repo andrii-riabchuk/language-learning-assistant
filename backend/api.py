@@ -1,4 +1,6 @@
+from urllib import response
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 import http.client
 import json 
@@ -9,21 +11,31 @@ from typing import Union
 
 app = FastAPI()
 
+origins = ["*"]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+    expose_headers=["*"])
+
 @app.get("/definition/{word}")
 def read_item(word: str):
-    return request_word(word)
+    res = request_word(word)
+    if not res: return {}
+    return res[0]
 
 
 def request_word(word):
     conn = http.client.HTTPSConnection("lexicala1.p.rapidapi.com")
 
     headers = {
-        'X-RapidAPI-Key': secret_key,
+        'X-RapidAPI-Key': "",
         'X-RapidAPI-Host': "lexicala1.p.rapidapi.com"
     }
 
     text = urllib.parse.quote_plus(word)
-    print(text)
     conn.request("GET", f"/search-entries?text={text}&language=fr", headers=headers)
 
     res = conn.getresponse()
@@ -31,15 +43,24 @@ def request_word(word):
     obj = json.loads(data, object_hook=lambda d: SimpleNamespace(**d))
     resultsList = []
     for result in obj.results:
-        print(result)
         headword = result.headword
-        pronunciation = headword.pronunciation
+        
+        word = headword.text
+        pronunciation = (headword.pronunciation or None) and headword.pronunciation.value
         pos = headword.pos
         gender = headword.gender
-        senses = [sense.translations.en for sense in result.senses]
-        resultsList.append((headword, pronunciation, pos, gender, senses))
+        meanings = []
+        for senseEntry in result.senses:
+            translation_en = senseEntry.translations.en
+            if not translation_en: continue
+            if isinstance(translation_en, list):
+                meanings.append([x.text for x in translation_en])
+            else:
+                meanings.append([translation_en.text])
+        response_obj = {'word': word, 'pronunciation': pronunciation, 'pos': pos, 'gender': gender, 'meanings': meanings}
+
+        resultsList.append(response_obj)
     
-    print(resultsList)
     return resultsList
 
 
