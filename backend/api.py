@@ -1,14 +1,24 @@
+from fastapi import FastAPI
+
 import http.client
 import json 
 import urllib.parse
 
 from types import SimpleNamespace
+from typing import Union
+
+app = FastAPI()
+
+@app.get("/definition/{word}")
+def read_item(word: str):
+    return request_word(word)
+
 
 def request_word(word):
     conn = http.client.HTTPSConnection("lexicala1.p.rapidapi.com")
 
     headers = {
-        'X-RapidAPI-Key': "734089a04bmshe562790e1e5b070p128df7jsnc6234360c710",
+        'X-RapidAPI-Key': secret_key,
         'X-RapidAPI-Host': "lexicala1.p.rapidapi.com"
     }
 
@@ -33,4 +43,4 @@ def request_word(word):
     return resultsList
 
 
-request_word("ménage")
+# request_word("ménage")
