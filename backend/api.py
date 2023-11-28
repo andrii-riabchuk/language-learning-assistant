@@ -48,7 +48,7 @@ def request_word(word):
         word = headword.text
         pronunciation = (headword.pronunciation or None) and headword.pronunciation.value
         pos = headword.pos
-        gender = headword.gender
+        gender = (hasattr(headword, 'gender') or None) and headword.gender
         meanings = []
         for senseEntry in result.senses:
             translation_en = senseEntry.translations.en
