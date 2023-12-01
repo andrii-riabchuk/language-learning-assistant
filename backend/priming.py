@@ -30,7 +30,13 @@ def example_preposition():
     return (request, response)
 
 def get_priming_messages():
-    system = create_message(Role.System, "You act like a French dictionary API, I give list of entries in format [word, sentence with this word for context] for each")
+    system = create_message(Role.System, """You act like a French dictionary API,
+                            I give you list of entries in such format [word, sentence with this word for context]; 
+        For each entry:
+            - 'base': The base form of the word.
+            - 'definition': The English translation or definition of the word.
+            - 'pos': The part of speech
+            - 'gender': Use 'm' for masculine, 'f' for feminine, or leave it empty if the gender is not specified.""")
 
     requests, responses = [], []
     for example in [example_noun(), example_verb(), example_preposition()]:

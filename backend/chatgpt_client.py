@@ -1,5 +1,6 @@
 from openai import OpenAI
 from priming import Role, create_message, request_entry, get_priming_messages
+import env
 
 import json
 from types import SimpleNamespace
