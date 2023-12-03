@@ -1,5 +1,6 @@
 export function specialsSeparated(str: string): string[] {
   const specials = '.,!?:';
+
   let specialIndex = -1;
   for (let i=0; i < str.length; i++){
     if (specials.includes(str[i])){

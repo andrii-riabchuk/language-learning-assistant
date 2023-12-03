@@ -1,11 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import { toClip, toCsv } from "../utils/export";
-import { compareIgnoreCase, getLineFeed, specialsSeparated } from "../utils/string";
+import { compareIgnoreCase } from "../utils/string";
 
 import "./LanguageAssistant.css";
 import { lookUp } from "../api/myapi";
 import CrossButton from "../ui/CrossButton/CrossButton";
-import { clean, extractWordSentences } from "../utils/language";
+import { SentenceWord, clean, extractSentencesLines } from "../utils/language";
 
 export interface LanguageAssistantProps {
   forText: string;
@@ -18,26 +18,20 @@ export interface Definition {
 
 export default function LanguageAssistant({ forText }: LanguageAssistantProps) {
   const text = clean(forText);
-  let words = text.split(" ").filter(Boolean);
 
   // -----------------------------------------------
-  const wordSentences = extractWordSentences(text);
-  console.log(wordSentences.words.length);
-  console.log(words.length);
-  const arr1 = wordSentences.words.map(x => x.display);
-  const arr2 = words;
-  console.log(arr1);
-  console.log(arr2);
-  console.log(arr1.filter(x => !arr2.includes(x)))
-  words = arr1;
+  const result = extractSentencesLines(text);
+  console.log(result);
   // -----------------------------------------------
   
-  const [selectedWords, setSelectedWords] = useState<string[]>([]);
+  const [selectedWords, setSelectedWords] = useState<SentenceWord[]>([]);
+  const wordList = selectedWords.map(sw => sw.word);
+
   const lastAddedWordRef = useRef<HTMLTableRowElement>(null);
 
-  const addSelectedWord = (word: string) => {
-    if (!selectedWords.find((x) => compareIgnoreCase(x, word)))
-      setSelectedWords([...selectedWords, word]);
+  const addSelectedWord = (sWord: SentenceWord) => {
+    if (!selectedWords.find((x) => compareIgnoreCase(x.word, sWord.word)))
+      setSelectedWords([...selectedWords, sWord]);
   };
 
   useEffect(() => {
@@ -49,12 +43,14 @@ export default function LanguageAssistant({ forText }: LanguageAssistantProps) {
     
   }
 
-  const onTextAreaClick = (e: React.MouseEvent<HTMLSpanElement>) => {
-    const element = e.currentTarget;
-    
-    const word = specialsSeparated(words[Number(element.id)])[0];
-    addSelectedWord(word);
-  };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const getOnWordClick = (lineId: number, wordId: number): (e: any) => void  => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    return (e: React.MouseEvent<HTMLSpanElement>) => {
+      const sentenceWord = result[lineId].words[wordId];
+      addSelectedWord(sentenceWord);
+    };
+  }
 
   const onCrossClick = (i: number) => {
     function f() {
@@ -63,8 +59,8 @@ export default function LanguageAssistant({ forText }: LanguageAssistantProps) {
     return f;
   };
 
-  const onCopyClick = () => toClip(selectedWords);
-  const onExportClick = () => toCsv(selectedWords);
+  const onCopyClick = () => toClip(wordList);
+  const onExportClick = () => toCsv(wordList);
   console.log("definition:", definition);
 
   return (
@@ -72,29 +68,37 @@ export default function LanguageAssistant({ forText }: LanguageAssistantProps) {
       <div className="column">
         <h2>🤗🤗🤗</h2>
         <div className="textContainer">
-          {words.map((word, i) => {
-            const separated = specialsSeparated(word);
-            const wordBody = separated[0],
-              specials = separated[1];
-            const lf = getLineFeed(specials);
-            console.log([wordBody], specials, lf)
+          {
+            result.map((line, i) => {
+              if (line.IsEmpty) return <br/>;
+              return <>
+                {line.words.map((sentenceWord, j) => {
+                  const toRender: JSX.Element[] = [];
+                  // console.log('line', i, 'sentenceWord - ', sentenceWord.word, 'specials -', sentenceWord.specials);
 
-            return (
-              <>
-                
-                <span
-                  key={word + i.toString()}
-                  id={i.toString()}
-                  className="word"
-                  onClick={onTextAreaClick}
-                >
-                  {wordBody}
-                </span>
-                {specials + " "}
-                {lf ? Array(lf).map(()=><br/>) : null}
+                  if (sentenceWord.isSpecial) {
+                    toRender.push(<span>{sentenceWord.word}</span>);
+                  }
+                  else {
+                    toRender.push(<span
+                      key={i.toString() + '_' + j + '_' + sentenceWord}
+                      id={i.toString() + '_' + j.toString()}
+                      className="word"
+                      onClick={getOnWordClick(i, j)}
+                    >
+                      {sentenceWord.word}
+                    </span>);
+                    toRender.push(<span>{sentenceWord.specials}</span>)
+                  }
+                  toRender.push(<>{" "}</>)
+                  // toRender.push(<br/>);
+
+                  return toRender;
+                })}
+                <br/>
               </>
-            );
-          })}
+            })
+          }
         </div>
       </div>
       <div className="column">
@@ -103,9 +107,9 @@ export default function LanguageAssistant({ forText }: LanguageAssistantProps) {
         <button onClick={onExportClick}>Export</button>
         <div className="word-box">
           <table style={{ textAlign: "start" }}>
-            {selectedWords.map((x, i) => {
+            {wordList.map((x, i) => {
               const itemProps =
-                i == selectedWords.length - 1 ? { ref: lastAddedWordRef } : {};
+                i == wordList.length - 1 ? { ref: lastAddedWordRef } : {};
               return (
                 <tr key={x + i} {...itemProps}>
                   <td style={{ width: "150px" }}>

@@ -2,7 +2,8 @@ import { isNormalWord, specialsSeparated } from "./string";
 
 export interface SentenceWord {
     word: string;
-    display: string;
+    specials: string;
+    lineId: number;
     sentenceId: number;
     wordId: number;
     isSpecial: boolean;
@@ -11,37 +12,40 @@ export interface SentenceWord {
 export interface WordSentences {
     words: SentenceWord[];
     sentences: string[][];
+    IsEmpty: boolean;
 }
 
-export function extractWordSentences(text: string): WordSentences {
-    // first divide into lines
-    console.log([text])
-    const lines = splitLines(text);
+export function extractSentencesLines(text: string): WordSentences[] {
+    return splitLines(text).map((str, i) => extractWordSentences(str, i));
+}
 
-    for(let i=0; i < lines.length; i++) {
-        
-        console.log(lines[i]);
+function extractWordSentences(text: string, lineId: number) : WordSentences {
+    if (!text) {
+        return {words: [], sentences:[], IsEmpty: true }
     }
 
-    // 
     const sentencesStr = text.split(/(.*[.?!]+)/).filter(x => Boolean(x.trim()));
-    console.log('sentencesStr', sentencesStr)
-    console.log("here is your shit", sentencesStr)
     const words: SentenceWord[] = [];
     const sentences: string[][] = [];
     sentencesStr.forEach((sentence, i) => {
         const sentenceWords = sentence.split(' ');
         sentences.push(sentenceWords);
         sentenceWords.forEach((word, j) => {
-            const wordCleaned = specialsSeparated(word)[0];
-            words.push({
-                display: word,
-                word: wordCleaned, sentenceId: i, wordId: j, isSpecial: !isNormalWord(word)
-            });
+            if (isNormalWord(word)){
+                const separ = specialsSeparated(word);
+                words.push({
+                    specials: separ[1],
+                    word: separ[0],
+                    lineId: lineId,
+                    sentenceId: i, wordId: j, isSpecial: false
+                });
+            } else {
+                words.push({isSpecial: true, word: word, specials: "",lineId: lineId, sentenceId: i, wordId: j})
+            }
         });
     });
 
-    return {words: words, sentences: sentences};
+    return {words: words, sentences: sentences, IsEmpty: false};
 }
 
 function splitLines(text: string): string[]{
