@@ -1,5 +1,15 @@
 import { isNormalWord, specialsSeparated } from "./string";
 
+export interface Text {
+    lines: WordSentences[];
+}
+
+export interface WordSentences {
+    words: SentenceWord[];
+    sentences: string[][];
+    IsEmpty: boolean;
+}
+
 export interface SentenceWord {
     word: string;
     specials: string;
@@ -9,14 +19,23 @@ export interface SentenceWord {
     isSpecial: boolean;
 }
 
-export interface WordSentences {
-    words: SentenceWord[];
-    sentences: string[][];
-    IsEmpty: boolean;
+export function getWordContext(text: Text, sw: SentenceWord) {
+    const line = text.lines[sw.lineId];
+    const sentences = line.sentences;
+    
+    // sentence - list of words
+    const sentence = sentences[sw.sentenceId];
+
+    // neighbourhood of 3 items from left and right
+    const from = Math.max(0, sw.wordId - 3);
+    const to = Math.min(sentence.length, sw.wordId + 3);
+    const neighbourhood = sentence.slice(from, to);
+
+    return neighbourhood.join(" ");
 }
 
-export function extractSentencesLines(text: string): WordSentences[] {
-    return splitLines(text).map((str, i) => extractWordSentences(str, i));
+export function extractSentencesLines(text: string): Text {
+    return {lines: splitLines(text).map((str, i) => extractWordSentences(str, i))};
 }
 
 function extractWordSentences(text: string, lineId: number) : WordSentences {

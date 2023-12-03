@@ -5,7 +5,8 @@ import { compareIgnoreCase } from "../utils/string";
 import "./LanguageAssistant.css";
 import { lookUp } from "../api/myapi";
 import CrossButton from "../ui/CrossButton/CrossButton";
-import { SentenceWord, clean, extractSentencesLines } from "../utils/language";
+import { SentenceWord, clean, extractSentencesLines, getWordContext } from "../utils/language";
+import { requestDefinitions } from "../api/chatgpt_api";
 
 export interface LanguageAssistantProps {
   forText: string;
@@ -17,12 +18,7 @@ export interface Definition {
 }
 
 export default function LanguageAssistant({ forText }: LanguageAssistantProps) {
-  const text = clean(forText);
-
-  // -----------------------------------------------
-  const result = extractSentencesLines(text);
-  console.log(result);
-  // -----------------------------------------------
+  const text = extractSentencesLines(clean(forText));
   
   const [selectedWords, setSelectedWords] = useState<SentenceWord[]>([]);
   const wordList = selectedWords.map(sw => sw.word);
@@ -40,14 +36,19 @@ export default function LanguageAssistant({ forText }: LanguageAssistantProps) {
 
   const [definition, setDefinition] = useState<Definition>();
   function lookUpDefinitions() {
-    
+    const wordsWithContext = selectedWords.map(sw => {
+      const context = getWordContext(text, sw);
+      return {word: sw.word, context}
+    });
+
+    requestDefinitions(wordsWithContext);
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const getOnWordClick = (lineId: number, wordId: number): (e: any) => void  => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     return (e: React.MouseEvent<HTMLSpanElement>) => {
-      const sentenceWord = result[lineId].words[wordId];
+      const sentenceWord = text.lines[lineId].words[wordId];
       addSelectedWord(sentenceWord);
     };
   }
@@ -69,7 +70,7 @@ export default function LanguageAssistant({ forText }: LanguageAssistantProps) {
         <h2>🤗🤗🤗</h2>
         <div className="textContainer">
           {
-            result.map((line, i) => {
+            text.lines.map((line, i) => {
               if (line.IsEmpty) return <br/>;
               return <>
                 {line.words.map((sentenceWord, j) => {
