@@ -1,6 +1,7 @@
 .word:hover {
   background-color: #ffcc00;
 }
+
 textarea {
   padding: 10px;
   display: block;
@@ -12,6 +13,12 @@ textarea {
   float: left;
   margin: 20px;
 }
+
+.lookup-header {
+  display: inline-block;
+  vertical-align: middle;
+}
+
 .word-box {
   /* width: 200px; */
   height: 400px;
@@ -38,6 +45,7 @@ textarea {
 .cell {
   float: inline-start;
 }
+
 .textContainer {
   padding: 10px;
   display: block;

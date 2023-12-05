@@ -2,8 +2,8 @@ export function specialsSeparated(str: string): string[] {
   const specials = '.,!?:';
 
   let specialIndex = -1;
-  for (let i=0; i < str.length; i++){
-    if (specials.includes(str[i])){
+  for (let i = 0; i < str.length; i++) {
+    if (specials.includes(str[i])) {
       specialIndex = i;
       break;
     }
@@ -27,4 +27,8 @@ export function isNormalWord(str: string) {
 
 export function getLineFeed(str: string) {
   return str.split('\n').length - 1
+}
+
+export function strIndex(...numbers: number[]): string {
+  return numbers.join("_");
 }

@@ -10,3 +10,8 @@ export interface DictionaryEntry {
     pos: string;
     gender?: string;
 }
+
+export interface Loadable<T> {
+    isLoaded: boolean;
+    value?: T;
+}

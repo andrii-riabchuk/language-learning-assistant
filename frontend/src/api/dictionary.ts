@@ -12,7 +12,10 @@ export class Dictionary {
         this.storage[word] = definition;
     }
 
-    loadDefinitions(words: WordDefinitionRequest[]) {
+    async loadDefinitions(words: WordDefinitionRequest[]) {
+        // const delay = ms => new Promise(res => setTimeout(res, ms));
+        // await delay(5000);
+
         const wordsToRequest: WordDefinitionRequest[] = [];
 
         words.forEach((wq) => {
@@ -22,7 +25,7 @@ export class Dictionary {
         });
 
         if (wordsToRequest.length) {
-            requestDefinitions(wordsToRequest, (definitions: DictionaryEntry[]) => {
+            await requestDefinitions(wordsToRequest, (definitions: DictionaryEntry[]) => {
                 definitions.forEach((def) => {
                     this.set(def.word, def);
                 })

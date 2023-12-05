@@ -1,14 +1,14 @@
 import React, { useEffect, useRef, useState } from "react";
 import { toClip, toCsv } from "../utils/export";
-import { compareIgnoreCase } from "../utils/string";
+import { compareIgnoreCase, strIndex } from "../utils/string";
 
 import "./LanguageAssistant.css";
-import { lookUp } from "../api/myapi";
 import CrossButton from "../ui/CrossButton/CrossButton";
 import { SentenceWord, clean, extractSentencesLines, getWordContext } from "../utils/language";
-import { requestDefinitions } from "../api/chatgpt_api";
 import { Dictionary } from "../api/dictionary";
 import WordBox from "./WordBox/WordBox";
+import { DictionaryEntry, Loadable } from "../api/types";
+import Loader from "../ui/CrossButton/Loader/Loader";
 
 export interface LanguageAssistantProps {
   forText: string;
@@ -25,27 +25,40 @@ export default function LanguageAssistant({ forText }: LanguageAssistantProps) {
   const text = extractSentencesLines(clean(forText));
 
   const [selectedWords, setSelectedWords] = useState<SentenceWord[]>([]);
+  const checkSelected = useRef<{ [key: string]: boolean }>({});
+  const checkMap = checkSelected.current;
+
   const wordList = selectedWords.map(sw => sw.word);
 
   const lastAddedWordRef = useRef<HTMLTableRowElement>(null);
 
   const addSelectedWord = (sWord: SentenceWord) => {
-    if (!selectedWords.find((x) => compareIgnoreCase(x.word, sWord.word)))
+    if (!selectedWords.find((x) => compareIgnoreCase(x.word, sWord.word))) {
       setSelectedWords([...selectedWords, sWord]);
+    }
   };
 
   useEffect(() => {
     lastAddedWordRef.current?.scrollIntoView();
   }, [selectedWords]);
 
-  const [definition, setDefinition] = useState<DictionaryEntry>();
+  const [definition, setDefinition] = useState<Loadable<DictionaryEntry>>();
   function lookUpDefinitions() {
     const wordsWithContext = selectedWords.map(sw => {
       const context = getWordContext(text, sw);
       return { word: sw.word, context }
     });
+    const wordIndeces = selectedWords.map(sw => strIndex(sw.lineId, sw.wordId));
 
-    dictionary.loadDefinitions(wordsWithContext);
+    setDefinition({ ...definition, isLoaded: false });
+    dictionary.loadDefinitions(wordsWithContext).then(() => {
+      console.log("definitions loaded");
+      wordIndeces.forEach(ij_str => checkMap[ij_str] = true);
+      setDefinition({ ...definition, isLoaded: true });
+      if (!definition?.value) {
+        onWordListItemClick(wordList[0]);
+      }
+    });
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -59,7 +72,9 @@ export default function LanguageAssistant({ forText }: LanguageAssistantProps) {
 
   const onCrossClick = (i: number) => {
     function f() {
+      const word = selectedWords[i];
       setSelectedWords(selectedWords.toSpliced(i, 1));
+      checkMap[strIndex(word.lineId, word.wordId)] = false;
     }
     return f;
   };
@@ -72,11 +87,23 @@ export default function LanguageAssistant({ forText }: LanguageAssistantProps) {
     console.log("wordList item click", event);
     console.log("going to lookup dictionary with word: ", word);
     const lll = dictionary.get(word);
-    setDefinition(lll);
+    setDefinition({ isLoaded: definition?.isLoaded ?? true, value: lll });
     console.log("result: ", lll);
   }
 
+  const showLoader = definition && !definition.isLoaded;
+  console.log('definition- ', definition);
+  console.log('showLoader -', showLoader);
 
+  const getOnWordHover = (sw: SentenceWord): () => void => {
+    return () => {
+      const ij = strIndex(sw.lineId, sw.wordId);
+      if (!checkMap[ij]) return;
+
+      console.log('on hover event');
+      onWordListItemClick(sw.word);
+    }
+  }
   //
   return (
     <>
@@ -99,6 +126,7 @@ export default function LanguageAssistant({ forText }: LanguageAssistantProps) {
                       key={i.toString() + '_' + j + '_' + sentenceWord}
                       id={i.toString() + '_' + j.toString()}
                       className="word"
+                      onMouseOver={getOnWordHover(sentenceWord)}
                       onClick={getOnWordClick(i, j)}
                     >
                       {sentenceWord.word}
@@ -141,8 +169,15 @@ export default function LanguageAssistant({ forText }: LanguageAssistantProps) {
         {/* <button onClick={() => lookUp("", onLookUp)}>Lookup</button> */}
       </div>
       <div className="column">
-        <h2><button onClick={lookUpDefinitions}>Lookup</button></h2>
-        <WordBox entry={definition ?? { word: "word", base: "base", gender: "masculine", definition: "definition", pos: "noun" }} />
+        <h2><div className="lookup-header">
+          <button onClick={lookUpDefinitions}>Lookup</button> {showLoader ? <Loader /> : null}
+        </div></h2>
+        {(() => {
+          console.log("inside lookup body, again", definition);
+          if (!definition || !definition.value) return null;
+
+          return <WordBox entry={definition.value!} />
+        })()}
       </div>
     </>
   );

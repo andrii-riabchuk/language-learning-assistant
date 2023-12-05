@@ -12,9 +12,9 @@ export function WordBox(props: { entry: DictionaryEntry }) {
 
     return <div className="entry-box">
         {entry?.gender ?
-            (<p><div className="gender">
+            (<><div className="gender">
                 <span>[masculine]</span>
-            </div><br /></p>)
+            </div><br /></>)
             : null}
         <p><span className="wordbox-word">{entry.word}<sub>{entry.pos}</sub></span></p>
         <p><span className="property">Base:</span> {entry.base}</p>
