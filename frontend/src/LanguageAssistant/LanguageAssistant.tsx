@@ -107,8 +107,12 @@ export default function LanguageAssistant({ forText }: LanguageAssistantProps) {
   //
   return (
     <>
-      <div className="column">
-        <h2>🤗🤗🤗</h2>
+      <div className="column main">
+        <h2>🤗🤗🤗
+          <div className="lookup-header">
+            <button className="lookup-button" onClick={lookUpDefinitions}>Lookup</button> {showLoader ? <Loader /> : null}
+          </div>
+        </h2>
         <div className="textContainer">
           {
             text.lines.map((line, i) => {
@@ -143,6 +147,15 @@ export default function LanguageAssistant({ forText }: LanguageAssistantProps) {
             })
           }
         </div>
+        <div className="lookup-column">
+          <h2></h2>
+          {(() => {
+            console.log("inside lookup body, again", definition);
+            if (!definition || !definition.value) return null;
+
+            return <WordBox entry={definition.value!} />
+          })()}
+        </div>
       </div>
       <div className="column">
         <h2></h2>
@@ -167,17 +180,6 @@ export default function LanguageAssistant({ forText }: LanguageAssistantProps) {
           </table>
         </div>
         {/* <button onClick={() => lookUp("", onLookUp)}>Lookup</button> */}
-      </div>
-      <div className="column">
-        <h2><div className="lookup-header">
-          <button onClick={lookUpDefinitions}>Lookup</button> {showLoader ? <Loader /> : null}
-        </div></h2>
-        {(() => {
-          console.log("inside lookup body, again", definition);
-          if (!definition || !definition.value) return null;
-
-          return <WordBox entry={definition.value!} />
-        })()}
       </div>
     </>
   );

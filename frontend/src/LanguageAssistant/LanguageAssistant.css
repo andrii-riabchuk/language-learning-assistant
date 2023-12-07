@@ -14,13 +14,33 @@ textarea {
   margin: 20px;
 }
 
+.column .main {
+  display: inline;
+}
+
+.lookup-column {
+  width: 220px;
+}
+
 .lookup-header {
-  display: inline-block;
   vertical-align: middle;
+  font-size: 16px;
+  float: right;
+}
+
+.lookup-button {
+  background-color: rgb(255 236 212);
+  /* outline: none; */
+  border: none;
+  border-radius: 0;
+}
+
+.lookup-button:hover {
+  background-color: rgb(241 221 194);
 }
 
 .word-box {
-  /* width: 200px; */
+  width: 210px;
   height: 400px;
   max-height: 500px;
   overflow-y: auto;
