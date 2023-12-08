@@ -11,11 +11,12 @@ export async function requestDefinitions(words: WordDefinitionRequest[], callbac
         headers: {
             "Content-type": "application/json; charset=UTF-8"
         }
-    }).then(x => x.json());
+    }).then(x => x.json()).catch(_ => { });
 
     if (Array.isArray(res)) {
         return callback(res);
     } else {
-        throw Error("Incorrect api response");
+        console.log("Incorrect api response", res);
+        // return callback(res);
     }
 }

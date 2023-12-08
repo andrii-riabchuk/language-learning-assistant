@@ -2,13 +2,14 @@ import React, { useEffect, useRef, useState } from "react";
 import { toClip, toCsv } from "../utils/export";
 import { compareIgnoreCase, strIndex } from "../utils/string";
 
-import "./LanguageAssistant.css";
 import CrossButton from "../ui/CrossButton/CrossButton";
 import { SentenceWord, clean, extractSentencesLines, getWordContext } from "../utils/language";
 import { Dictionary } from "../api/dictionary";
 import WordBox from "./WordBox/WordBox";
 import { DictionaryEntry, Loadable } from "../api/types";
 import Loader from "../ui/CrossButton/Loader/Loader";
+
+import "./LanguageAssistant.css";
 
 export interface LanguageAssistantProps {
   forText: string;
@@ -20,6 +21,7 @@ export interface Definition {
 }
 
 const dictionary = new Dictionary();
+const delayedTasks: { [key: string]: number } = {};
 
 export default function LanguageAssistant({ forText }: LanguageAssistantProps) {
   const text = extractSentencesLines(clean(forText));
@@ -95,13 +97,24 @@ export default function LanguageAssistant({ forText }: LanguageAssistantProps) {
   console.log('definition- ', definition);
   console.log('showLoader -', showLoader);
 
-  const getOnWordHover = (sw: SentenceWord): () => void => {
+  const getOnWordMouseHover = (sw: SentenceWord): () => void => {
+    return () => {
+      console.log("you won't believe how often this method fire");
+      const ij = strIndex(sw.lineId, sw.wordId);
+      if (!checkMap[ij]) return;
+
+      // onWordListItemClick(sw.word);
+      delayedTasks[ij] = window.setTimeout(() => {
+        onWordListItemClick(sw.word);
+      }, 500);
+    }
+  }
+  const getOnMouseLeave = (sw: SentenceWord): () => void => {
     return () => {
       const ij = strIndex(sw.lineId, sw.wordId);
       if (!checkMap[ij]) return;
 
-      console.log('on hover event');
-      onWordListItemClick(sw.word);
+      clearTimeout(delayedTasks[ij]);
     }
   }
   //
@@ -130,7 +143,8 @@ export default function LanguageAssistant({ forText }: LanguageAssistantProps) {
                       key={i.toString() + '_' + j + '_' + sentenceWord}
                       id={i.toString() + '_' + j.toString()}
                       className="word"
-                      onMouseOver={getOnWordHover(sentenceWord)}
+                      onMouseOver={getOnWordMouseHover(sentenceWord)}
+                      onMouseLeave={getOnMouseLeave(sentenceWord)}
                       onClick={getOnWordClick(i, j)}
                     >
                       {sentenceWord.word}
