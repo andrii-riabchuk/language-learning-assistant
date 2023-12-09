@@ -5,17 +5,14 @@ export class Dictionary {
     storage: { [key: string]: DictionaryEntry } = {};
 
     get(word: string): DictionaryEntry {
-        return this.storage[word];
+        return this.storage[word.toLowerCase()];
     }
 
     set(word: string, definition: DictionaryEntry) {
-        this.storage[word] = definition;
+        this.storage[word.toLocaleLowerCase()] = definition;
     }
 
     async loadDefinitions(words: WordDefinitionRequest[]) {
-        // const delay = ms => new Promise(res => setTimeout(res, ms));
-        // await delay(5000);
-
         const wordsToRequest: WordDefinitionRequest[] = [];
 
         words.forEach((wq) => {

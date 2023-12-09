@@ -11,6 +11,7 @@ export async function requestDefinitions(words: WordDefinitionRequest[], callbac
         headers: {
             "Content-type": "application/json; charset=UTF-8"
         }
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
     }).then(x => x.json()).catch(_ => { });
 
     if (Array.isArray(res)) {

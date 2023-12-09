@@ -86,20 +86,14 @@ export default function LanguageAssistant({ forText }: LanguageAssistantProps) {
 
   // temporary
   const onWordListItemClick = (word: string) => {
-    console.log("wordList item click", event);
-    console.log("going to lookup dictionary with word: ", word);
     const lll = dictionary.get(word);
     setDefinition({ isLoaded: definition?.isLoaded ?? true, value: lll });
-    console.log("result: ", lll);
   }
 
   const showLoader = definition && !definition.isLoaded;
-  console.log('definition- ', definition);
-  console.log('showLoader -', showLoader);
 
   const getOnWordMouseHover = (sw: SentenceWord): () => void => {
     return () => {
-      console.log("you won't believe how often this method fire");
       const ij = strIndex(sw.lineId, sw.wordId);
       if (!checkMap[ij]) return;
 
@@ -164,7 +158,6 @@ export default function LanguageAssistant({ forText }: LanguageAssistantProps) {
         <div className="lookup-column">
           <h2></h2>
           {(() => {
-            console.log("inside lookup body, again", definition);
             if (!definition || !definition.value) return null;
 
             return <WordBox entry={definition.value!} />

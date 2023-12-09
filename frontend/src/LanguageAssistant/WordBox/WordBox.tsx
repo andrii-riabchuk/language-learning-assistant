@@ -1,5 +1,6 @@
 import { DictionaryEntry } from '../../api/types';
 import { getCollinsLink, getGoogleLink } from '../../utils/external';
+
 import './WordBox.css'
 
 function decodeGender(str?: string) {
@@ -13,12 +14,7 @@ function decodeGender(str?: string) {
 }
 
 export function WordBox(props: { entry: DictionaryEntry }) {
-    // const entry = { word: "word", base: "base", gender: "masculine", definition: "definition", pos: "noun" };
-    // Object.assign(props, { entry: entry });
-
     const entry = props.entry;
-
-    // props.entry.gender = "feminine";
 
     return <div className="entry-box">
         <div className="gender">
@@ -30,8 +26,9 @@ export function WordBox(props: { entry: DictionaryEntry }) {
         <p><span className="property">Definition:</span> {entry.definition}</p>
         <div className='footer'>
             <a onClick={() => window.open(getCollinsLink(entry.word), 'popup', 'width=600,height=600')}>Collins </a>
-            <a href={getGoogleLink(entry.word)} target='_blank'>Google</a></div>
-    </div >;
+            <a href={getGoogleLink(entry.word)} target='_blank'>Google</a>
+        </div>
+    </div>;
 }
 
 export default WordBox;
