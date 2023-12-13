@@ -1,15 +1,11 @@
+import { DictionaryEntry, WordDefinitionRequest } from "./types";
 
 const baseUrl = "http://127.0.0.1:8000/definition";
 
-export interface WordDefinitionRequest {
-    word: string;
-    context: string;
-}
-
-export async function requestDefinitions(words: WordDefinitionRequest[]) {
+export async function requestDefinitions(words: WordDefinitionRequest[], callback: (definitions: DictionaryEntry[]) => void) {
     console.log("supposed body- ", JSON.stringify(words));
 
-    const res = await fetch(baseUrl, {
+    const res: DictionaryEntry[] = await fetch(baseUrl, {
         method: "POST",
         body: JSON.stringify(words),
         headers: {
@@ -17,5 +13,9 @@ export async function requestDefinitions(words: WordDefinitionRequest[]) {
         }
     }).then(x => x.json());
 
-    console.log(res);
+    if (Array.isArray(res)) {
+        callback(res);
+    } else {
+        throw Error("Incorrect api response");
+    }
 }

@@ -7,6 +7,8 @@ import { lookUp } from "../api/myapi";
 import CrossButton from "../ui/CrossButton/CrossButton";
 import { SentenceWord, clean, extractSentencesLines, getWordContext } from "../utils/language";
 import { requestDefinitions } from "../api/chatgpt_api";
+import { Dictionary } from "../api/dictionary";
+import WordBox from "./WordBox/WordBox";
 
 export interface LanguageAssistantProps {
   forText: string;
@@ -17,9 +19,11 @@ export interface Definition {
   meanings: string[][];
 }
 
+const dictionary = new Dictionary();
+
 export default function LanguageAssistant({ forText }: LanguageAssistantProps) {
   const text = extractSentencesLines(clean(forText));
-  
+
   const [selectedWords, setSelectedWords] = useState<SentenceWord[]>([]);
   const wordList = selectedWords.map(sw => sw.word);
 
@@ -34,18 +38,18 @@ export default function LanguageAssistant({ forText }: LanguageAssistantProps) {
     lastAddedWordRef.current?.scrollIntoView();
   }, [selectedWords]);
 
-  const [definition, setDefinition] = useState<Definition>();
+  const [definition, setDefinition] = useState<DictionaryEntry>();
   function lookUpDefinitions() {
     const wordsWithContext = selectedWords.map(sw => {
       const context = getWordContext(text, sw);
-      return {word: sw.word, context}
+      return { word: sw.word, context }
     });
 
-    requestDefinitions(wordsWithContext);
+    dictionary.loadDefinitions(wordsWithContext);
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const getOnWordClick = (lineId: number, wordId: number): (e: any) => void  => {
+  const getOnWordClick = (lineId: number, wordId: number): (e: any) => void => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     return (e: React.MouseEvent<HTMLSpanElement>) => {
       const sentenceWord = text.lines[lineId].words[wordId];
@@ -62,8 +66,18 @@ export default function LanguageAssistant({ forText }: LanguageAssistantProps) {
 
   const onCopyClick = () => toClip(wordList);
   const onExportClick = () => toCsv(wordList);
-  console.log("definition:", definition);
 
+  // temporary
+  const onWordListItemClick = (word: string) => {
+    console.log("wordList item click", event);
+    console.log("going to lookup dictionary with word: ", word);
+    const lll = dictionary.get(word);
+    setDefinition(lll);
+    console.log("result: ", lll);
+  }
+
+
+  //
   return (
     <>
       <div className="column">
@@ -71,7 +85,7 @@ export default function LanguageAssistant({ forText }: LanguageAssistantProps) {
         <div className="textContainer">
           {
             text.lines.map((line, i) => {
-              if (line.IsEmpty) return <br/>;
+              if (line.IsEmpty) return <br />;
               return <>
                 {line.words.map((sentenceWord, j) => {
                   const toRender: JSX.Element[] = [];
@@ -96,7 +110,7 @@ export default function LanguageAssistant({ forText }: LanguageAssistantProps) {
 
                   return toRender;
                 })}
-                <br/>
+                <br />
               </>
             })
           }
@@ -113,7 +127,7 @@ export default function LanguageAssistant({ forText }: LanguageAssistantProps) {
                 i == wordList.length - 1 ? { ref: lastAddedWordRef } : {};
               return (
                 <tr key={x + i} {...itemProps}>
-                  <td style={{ width: "150px" }}>
+                  <td style={{ width: "150px" }} onClick={() => { onWordListItemClick(x) }}>
                     {i + 1}. {x}
                   </td>
                   <td>
@@ -128,10 +142,7 @@ export default function LanguageAssistant({ forText }: LanguageAssistantProps) {
       </div>
       <div className="column">
         <h2><button onClick={lookUpDefinitions}>Lookup</button></h2>
-        <div className="definition" />
-        {definition?.word}
-        <br />
-        {definition?.meanings?.map((x) => x.join(",")).join(" || ")}
+        <WordBox entry={definition ?? { word: "word", base: "base", gender: "masculine", definition: "definition", pos: "noun" }} />
       </div>
     </>
   );

@@ -1,0 +1,47 @@
+.entry-box {
+    border: 1px solid #333;
+    padding: 0px 10px 20px 20px;
+    border-radius: 8px;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    max-width: 400px;
+    width: 100%;
+    display: inline-block;
+    text-align: left;
+    /* Set flex container to column direction */
+}
+
+.wordbox-word {
+    font-size: 20px;
+    color: #333;
+}
+
+sub {
+    font-weight: normal;
+    font-style: italic;
+    font-size: 14px;
+    color: blue;
+}
+
+p {
+    margin: 5px 0;
+    color: #666;
+}
+
+.property {
+    font-weight: bold;
+    color: #555;
+}
+
+.subtext {
+    font-size: 14px;
+    position: absolute;
+    top: -12px;
+    right: 0;
+    color: #777;
+}
+
+.gender {
+    float: right;
+    color: rgb(7, 205, 7);
+}
